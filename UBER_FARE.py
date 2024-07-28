@@ -34,7 +34,7 @@ def segment_time_of_day(hour):
         return 'night'
 
 # Function to extract features
-def features(passenger_count, pickup_date, pickup_time, distance):
+def features(passenger_count, pickup_date, pickup_time, distance, vehicle_type):
     day_name_mapping = {'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6}
     time_of_day_mapping = {'morning': 0, 'afternoon': 1, 'evening': 2, 'night': 3}
     vehicle_type_mapping = {'mini': 0, 'xuv': 1, 'premium xuv': 2}
@@ -48,7 +48,6 @@ def features(passenger_count, pickup_date, pickup_time, distance):
     hour = pickup_time.hour
     minutes = pickup_time.minute
     
-    vehicle_type = segment_passenger_count(passenger_count)
     vehicle_type = vehicle_type_mapping[vehicle_type]
     
     time_of_day = segment_time_of_day(hour)
@@ -85,6 +84,23 @@ def fare_predict(user_data):
     except Exception as e:
         st.error(f"Error predicting fare: {e}")
         return None
+
+# Function to get fare amount for different vehicle types
+def get_fare_for_all_vehicle_types(passenger_count, pickup_date, pickup_time, distance):
+    
+    if passenger_count <= 4:
+        vehicle_types = ['mini','xuv','premium xuv']
+    else:                                        # passenger_count is 5 or 6
+        vehicle_types = ['premium xuv']
+
+    fare_amounts = {}
+
+    for vehicle_type in vehicle_types:
+        feat_data = features(passenger_count, pickup_date, pickup_time, distance, vehicle_type)
+        fare_amount = fare_predict(feat_data)
+        fare_amounts[vehicle_type] = fare_amount
+
+    return fare_amounts
 
 # Function to fetch location suggestions
 def fetch_suggestions(query):
@@ -128,7 +144,7 @@ def create_map(pickup, dropoff, route_coordinates):
 
     folium.Marker(location=[pickup_lat, pickup_lng], popup="Pickup Location", icon=folium.Icon(color='green')).add_to(m)
     folium.Marker(location=[dropoff_lat, dropoff_lng], popup="Dropoff Location", icon=folium.Icon(color='red')).add_to(m)
-    folium.PolyLine(locations=route_coordinates, color="blue", weight=2.5).add_to(m)
+    folium.PolyLine(locations=route_coordinates, color="black", weight=2.5).add_to(m)
 
     return m
 
@@ -154,6 +170,64 @@ def location_finder(user_input, label):
         else:
             st.write(f"No suggestions found for {label}")
             return None
+
+def display_fare_amounts(fare_amounts):
+    for vehicle_type, fare in fare_amounts.items():
+        if vehicle_type == 'mini':
+            col1, col2, col3 = st.columns([1, 4, 1])
+            with col1:
+                st.image("IMAGES/mini.png", width=200)
+            with col2:
+                st.markdown(f"""
+                <div style="display: flex; align-items: center;">
+                    <div>
+                        <strong style="font-size: 1.5em;">Uber Mini</strong><br>
+                        <span style="font-size: 1.2em;">Affordable compact rides</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                <div style="font-size: 2em; text-align: right; color: #4CAF50;">${fare}</div>
+                """, unsafe_allow_html=True)
+
+        elif vehicle_type == 'xuv':
+            col1, col2, col3 = st.columns([1, 4, 1])
+            with col1:
+                st.image("IMAGES/xuv.png", width=200)
+            with col2:
+                st.markdown(f"""
+                <div style="display: flex; align-items: center;">
+                    <div>
+                        <strong style="font-size: 1.5em;">XUV</strong><br>
+                        <span style="font-size: 1.2em;">Comfortable sedans, top-quality drivers</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                <div style="font-size: 2em; text-align: right; color: #4CAF50;">${fare}</div>
+                """, unsafe_allow_html=True)
+
+        elif vehicle_type == 'premium xuv':
+            col1, col2, col3 = st.columns([1, 4, 1])
+            with col1:
+                st.image("IMAGES/premium_xuv.png", width=200)
+            with col2:
+                st.markdown(f"""
+                <div style="display: flex; align-items: center;">
+                    <div>
+                        <strong style="font-size: 1.5em;">Premium XUV</strong><br>
+                        <span style="font-size: 1.2em;">Premium SUVs with top-notch services</span>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+            with col3:
+                st.markdown(f"""
+                <div style="font-size: 2em; text-align: right; color: #4CAF50;">${fare}</div>
+                """, unsafe_allow_html=True)
+
+
 
 # Input page to get ride details from user
 def Input_page():
@@ -186,8 +260,9 @@ def Input_page():
                 if route_coordinates:
                     st.session_state.map = create_map(pickup_location, dropoff_location, route_coordinates)
 
-                    feat_data = features(passenger_count, pickup_date, pickup_time, distance)
-                    st.session_state.fare_amount = fare_predict(feat_data)
+                    fare_amounts = get_fare_for_all_vehicle_types(passenger_count, pickup_date, pickup_time, distance)
+                   
+                    st.session_state.fare_amounts = fare_amounts
                
     with col2:
         if pickup_location and dropoff_location:
@@ -203,11 +278,9 @@ def Input_page():
         else:
             st.write("Please enter all details and press 'Get Ride Details' to see the results.")
     
-    # Check if fare_amount is not None before formatting it
-    if st.session_state.fare_amount is not None:
-        st.markdown(f'### <div class="center-text">Predicted Fare Amount: ${st.session_state.fare_amount:.2f}</div>', unsafe_allow_html=True)
-    else:
-        st.markdown(f'### <div class="center-text">Fare amount could not be determined.</div>', unsafe_allow_html=True)
+    # Check if fare_amounts is not None before formatting it
+    if st.session_state.fare_amounts:
+        display_fare_amounts(st.session_state.fare_amounts)
 
 # Main function to run the Streamlit app
 def streamlit_app():
@@ -218,8 +291,8 @@ def streamlit_app():
         st.session_state.button_clicked = False
     if "map" not in st.session_state:
         st.session_state.map = None
-    if "fare_amount" not in st.session_state:
-        st.session_state.fare_amount = None
+    if "fare_amounts" not in st.session_state:
+        st.session_state.fare_amounts = None
 
     try:
         image = Image.open("IMAGES/Ride-with-Uber.webp")
