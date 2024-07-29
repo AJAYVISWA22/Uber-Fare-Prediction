@@ -178,6 +178,7 @@ def display_fare_amounts(fare_amounts):
             with col1:
                 st.image("IMAGES/mini.png", width=200)
             with col2:
+                st.markdown('<br><br>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div style="display: flex; align-items: center;">
                     <div>
@@ -187,6 +188,7 @@ def display_fare_amounts(fare_amounts):
                 </div>
                 """, unsafe_allow_html=True)
             with col3:
+                st.markdown('<br><br>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div style="font-size: 2em; text-align: right; color: #4CAF50;">${fare}</div>
                 """, unsafe_allow_html=True)
@@ -196,6 +198,7 @@ def display_fare_amounts(fare_amounts):
             with col1:
                 st.image("IMAGES/xuv.png", width=200)
             with col2:
+                st.markdown('<br><br>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div style="display: flex; align-items: center;">
                     <div>
@@ -205,6 +208,7 @@ def display_fare_amounts(fare_amounts):
                 </div>
                 """, unsafe_allow_html=True)
             with col3:
+                st.markdown('<br><br>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div style="font-size: 2em; text-align: right; color: #4CAF50;">${fare}</div>
                 """, unsafe_allow_html=True)
@@ -214,6 +218,7 @@ def display_fare_amounts(fare_amounts):
             with col1:
                 st.image("IMAGES/premium_xuv.png", width=200)
             with col2:
+                st.markdown('<br><br>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div style="display: flex; align-items: center;">
                     <div>
@@ -223,6 +228,7 @@ def display_fare_amounts(fare_amounts):
                 </div>
                 """, unsafe_allow_html=True)
             with col3:
+                st.markdown('<br><br>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div style="font-size: 2em; text-align: right; color: #4CAF50;">${fare}</div>
                 """, unsafe_allow_html=True)
@@ -265,12 +271,13 @@ def Input_page():
                     st.session_state.fare_amounts = fare_amounts
                
     with col2:
-        if pickup_location and dropoff_location:
-            st.write("Ride Details:")
-            col1, col2, col3 = st.columns(3)
-            col1.write(f"Pickup: {pickup_location}")
-            col2.write(f"Dropoff: {dropoff_location}")
-            col3.write(f"Distance: {distance:.2f} km")
+        if st.session_state.fare_amounts:
+            if pickup_location and dropoff_location:
+                st.write("Ride Details:")
+                col1, col2, col3 = st.columns(3)
+                col1.write(f"Pickup: {pickup_location}")
+                col2.write(f"Dropoff: {dropoff_location}")
+                col3.write(f"Distance: {distance:.2f} km")
 
             # Display map
             if st.session_state.map:
@@ -284,7 +291,8 @@ def Input_page():
 
 # Main function to run the Streamlit app
 def streamlit_app():
-    st.set_page_config(layout="wide")
+    icon=Image.open('IMAGES\icon.png')
+    st.set_page_config(page_title='Uber Fare ',page_icon=icon,layout='wide')
 
     # Initialize session state variables
     if "button_clicked" not in st.session_state:
@@ -306,14 +314,14 @@ def streamlit_app():
         with col1:
             st.title("Go anywhere with Uber")
             st.subheader("Request a ride, hop in, and go.")
-            st.markdown("<br><br><br><br><br>", unsafe_allow_html=True)
+            st.markdown("<br><br><br><br><br><br><br><br><br><br><br><br><br><br>", unsafe_allow_html=True)
             
             if st.button("See prices"):
                 st.session_state.button_clicked = True
 
         with col2:
             if image:
-                st.image(image, width=550)
+                st.image(image, width=500)
     else:
         Input_page()
 
