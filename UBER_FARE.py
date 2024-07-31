@@ -291,7 +291,7 @@ def Input_page():
 
 # Main function to run the Streamlit app
 def streamlit_app():
-    icon=Image.open('IMAGES\icon.png')
+    icon=Image.open('IMAGES/icon.png')
     st.set_page_config(page_title='Uber Fare ',page_icon=icon,layout='wide')
 
     # Initialize session state variables
