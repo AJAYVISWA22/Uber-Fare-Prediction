@@ -72,7 +72,7 @@ def features(passenger_count, pickup_date, pickup_time, distance, vehicle_type):
 # Function to predict fare amount
 def fare_predict(user_data):
     try:
-        with open('UBER_model.pkl', 'rb') as f:
+        with open('UBER_model_RF.pkl', 'rb') as f:
             model = pickle.load(f)
         y_pred = model.predict(user_data)
         fare_amount = float(y_pred[0])
